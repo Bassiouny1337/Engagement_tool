@@ -1,0 +1,40 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Engagement Tool{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.4/htmx.min.js"
+          integrity="sha512-2kIcAizYXhIn8TzUvqzEDZNuDZ+aW7yE/+f1HJHXFjQcGNfv1kqzJSTBRBSlOgp6B/KZsz1K0a3ZTqP9dnxyNAy=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="{% url 'dashboard:home' %}" class="brand">⛨ Engagement Tool</a>
+    <nav>
+      {% if user.is_authenticated %}
+        <span class="role-chip">{{ user.get_role_display }}</span>
+        <span class="who">{{ user.get_full_name|default:user.username }}</span>
+        <form action="{% url 'logout' %}" method="post" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="link">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

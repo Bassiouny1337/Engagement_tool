@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Engagement Tool{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<p class="muted">Signed in as <strong>{{ user_role }}</strong>.</p>
+
+<section class="card">
+  <h2>Your capabilities</h2>
+  {% if capabilities %}
+    <ul class="caps">
+      {% for c in capabilities %}<li>{{ c }}</li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Read-only access.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Coming next</h2>
+  <p class="muted">
+    Engagements, per-domain test-case tracking, Nmap import &amp; graph,
+    findings and reporting land in the next milestones.
+  </p>
+</section>
+{% endblock %}
