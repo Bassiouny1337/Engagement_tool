@@ -50,11 +50,13 @@ apps/dashboard     cross-engagement metrics & charts
 
 - **M1 Foundations** ✅ — project, custom User + 5 roles, capability matrix,
   audit log, base templates, auth, dashboard shell, domain checklist data, tests.
-- **M2 Engagements** — ClientOrg, Engagement + lifecycle state machine, scope
-  items, domains in scope, team assignment, object-level permissions.
-- **M3 Test cases** — seed checklists on domain add, status tracking
-  (not_started / in_progress / pass / fail / na / blocked), filtering,
-  per-domain & overall progress bars, custom test cases.
+- **M2 Engagements** ✅ — ClientOrg, Engagement + lifecycle state machine,
+  scope items, domains in scope, team assignment, role+membership access
+  control (`engagements/access.py`).
+- **M3 Test cases** ✅ — checklists auto-seeded on domain add (signal),
+  status tracking (not_started / in_progress / pass / fail / na / blocked),
+  per-domain + overall progress bars, HTMX inline status board, filtering.
+  (Custom test cases via admin for now; inline-add UI is a later polish.)
 - **M4 Nmap** — upload → defused parse → hosts/ports/services; DRF endpoints;
   Cytoscape network graph + sortable tables; "service → scope item / test case".
 - **M5 Findings & reporting** — findings with CVSS, reviewer sign-off workflow,

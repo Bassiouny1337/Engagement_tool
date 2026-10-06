@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}{{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <h1>{{ eng.title }}</h1>
+    <p class="muted">{{ eng.code }} · {{ eng.client.name }}
+      · {% include "engagements/_status_badge.html" with status=eng.status label=eng.get_status_display %}</p>
+  </div>
+  <a href="{% url 'testcases:board' code=eng.code %}" class="primary btn-sm">Test-case board →</a>
+</div>
+
+{% if eng.summary %}<p>{{ eng.summary }}</p>{% endif %}
+
+<section class="card">
+  <h2>Overall progress</h2>
+  {% include "engagements/_progress_bar.html" with pct=progress.overall.pct done=progress.overall.done total=progress.overall.total %}
+  {% if progress.domains %}
+    <table class="data compact">
+      <thead><tr><th>Domain</th><th>Progress</th><th>Done / Total</th></tr></thead>
+      <tbody>
+        {% for d in progress.domains %}
+          <tr>
+            <td>{{ d.label }}</td>
+            <td class="w-50">{% include "engagements/_progress_bar.html" with pct=d.pct done=d.done total=d.total %}</td>
+            <td class="muted">{{ d.done }} / {{ d.total }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No domains in scope yet — add one below to seed its checklist.</p>
+  {% endif %}
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Domains in scope</h2>
+    <ul class="tags">
+      {% for d in eng.domains.all %}<li>{{ d.get_domain_key_display }}</li>{% empty %}
+        <li class="muted">None</li>{% endfor %}
+    </ul>
+    {% if caps.manage_engagements %}
+      <form method="post" action="{% url 'engagements:add_domain' code=eng.code %}" class="row-gap">
+        {% csrf_token %}{{ add_domain_form.domain_key }}
+        <button type="submit" class="btn-sm">Add domain</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Lifecycle</h2>
+    {% if caps.manage_engagements and transitions %}
+      <form method="post" action="{% url 'engagements:change_status' code=eng.code %}" class="row-gap">
+        {% csrf_token %}
+        <select name="status">
+          {% for t in transitions %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn-sm">Change status</button>
+      </form>
+    {% else %}
+      <p class="muted">Current: {{ eng.get_status_display }}</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Scope items</h2>
+  <table class="data compact">
+    <thead><tr><th>Kind</th><th>Value</th><th>Domain</th><th>In scope</th><th>Notes</th>{% if caps.manage_engagements %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+      {% for s in scope_items %}
+        <tr>
+          <td>{{ s.get_kind_display }}</td>
+          <td class="mono">{{ s.value }}</td>
+          <td class="muted">{{ s.get_domain_key_display|default:"—" }}</td>
+          <td>{% if s.in_scope %}✅{% else %}⛔{% endif %}</td>
+          <td class="muted">{{ s.notes }}</td>
+          {% if caps.manage_engagements %}
+            <td><form method="post" action="{% url 'engagements:remove_scope' code=eng.code pk=s.pk %}">
+              {% csrf_token %}<button class="link danger">remove</button></form></td>
+          {% endif %}
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="muted">No scope items.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if caps.manage_engagements %}
+    <form method="post" action="{% url 'engagements:add_scope' code=eng.code %}" class="row-gap wrap">
+      {% csrf_token %}
+      {{ scope_form.kind }}{{ scope_form.value }}{{ scope_form.domain_key }}{{ scope_form.notes }}
+      <button type="submit" class="btn-sm">Add scope item</button>
+    </form>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Team</h2>
+  <ul class="tags">
+    {% for m in team %}<li>{{ m.user.get_full_name|default:m.user.username }} — {{ m.get_engagement_role_display }}</li>
+    {% empty %}<li class="muted">No team assigned (manage in admin).</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

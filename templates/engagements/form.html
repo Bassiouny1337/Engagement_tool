@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}New engagement{% endblock %}
+{% block content %}
+<h1>{% if mode == "create" %}New engagement{% else %}Edit engagement{% endif %}</h1>
+<form method="post" class="stack card">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <div class="row-gap">
+    <button type="submit" class="primary">Save</button>
+    <a href="{% url 'engagements:list' %}" class="btn-sm">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,19 @@
+<tr id="tc-{{ tc.pk }}" class="tc-row tc-{{ tc.status }}">
+  <td class="tc-title">{{ tc.title }}</td>
+  <td class="w-status">
+    {% if can_edit %}
+      <select name="status"
+              hx-post="{% url 'testcases:update_status' code=eng.code pk=tc.pk %}"
+              hx-target="#tc-{{ tc.pk }}"
+              hx-swap="outerHTML"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if tc.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <span class="badge tcb-{{ tc.status }}">{{ tc.get_status_display }}</span>
+    {% endif %}
+  </td>
+  <td class="muted w-assignee">{% if tc.assignee %}{{ tc.assignee.get_full_name|default:tc.assignee.username }}{% else %}—{% endif %}</td>
+</tr>

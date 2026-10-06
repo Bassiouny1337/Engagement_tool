@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ eng.code }} · Test cases{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Test cases · {{ eng.code }}</h1>
+  <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
+</div>
+
+<div class="filters">
+  <span class="muted">Domain:</span>
+  <a href="?{% if active_status %}status={{ active_status }}{% endif %}"
+     class="chip {% if not active_domain %}on{% endif %}">All</a>
+  {% for key in domain_keys %}
+    <a href="?domain={{ key }}{% if active_status %}&status={{ active_status }}{% endif %}"
+       class="chip {% if active_domain == key %}on{% endif %}">{{ key }}</a>
+  {% endfor %}
+</div>
+
+{% if not can_edit %}<p class="muted">Read-only — your role or assignment does not permit editing here.</p>{% endif %}
+
+{% for domain, cats in grouped.items %}
+  <section class="card">
+    <h2>{{ domain }}</h2>
+    {% for category, cases in cats.items %}
+      <h3 class="cat">{{ category }}</h3>
+      <table class="data compact">
+        <tbody>
+          {% for tc in cases %}
+            {% include "testcases/_row.html" with tc=tc eng=eng statuses=statuses can_edit=can_edit %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+  </section>
+{% empty %}
+  <p class="muted">No test cases. Add a domain to the engagement to seed its checklist.</p>
+{% endfor %}
+{% endblock %}

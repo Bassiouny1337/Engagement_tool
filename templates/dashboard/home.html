@@ -1,25 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · Engagement Tool{% endblock %}
 {% block content %}
-<h1>Dashboard</h1>
-<p class="muted">Signed in as <strong>{{ user_role }}</strong>.</p>
+<div class="row-between">
+  <h1>Dashboard</h1>
+  <span class="muted">Signed in as <strong>{{ user_role }}</strong></span>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Engagements</h2>
+    <p class="stat">{{ engagement_count }}</p>
+    <div class="filters">
+      {% for label, n in status_counts %}
+        <span class="chip">{{ label }}: {{ n }}</span>
+      {% endfor %}
+    </div>
+    <a href="{% url 'engagements:list' %}" class="btn-sm">View all →</a>
+  </section>
+
+  <section class="card">
+    <h2>Test-case completion</h2>
+    <p class="stat">{{ tc_done }} / {{ tc_total }}</p>
+    {% include "engagements/_progress_bar.html" with pct=tc_pct done=tc_done total=tc_total %}
+  </section>
+</div>
 
 <section class="card">
-  <h2>Your capabilities</h2>
-  {% if capabilities %}
-    <ul class="caps">
-      {% for c in capabilities %}<li>{{ c }}</li>{% endfor %}
-    </ul>
-  {% else %}
-    <p class="muted">Read-only access.</p>
-  {% endif %}
-</section>
-
-<section class="card">
-  <h2>Coming next</h2>
-  <p class="muted">
-    Engagements, per-domain test-case tracking, Nmap import &amp; graph,
-    findings and reporting land in the next milestones.
-  </p>
+  <h2>Recent engagements</h2>
+  <table class="data compact">
+    <thead><tr><th>Code</th><th>Title</th><th>Client</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for e in recent %}
+        <tr>
+          <td><a href="{% url 'engagements:detail' code=e.code %}">{{ e.code }}</a></td>
+          <td>{{ e.title }}</td>
+          <td>{{ e.client.name }}</td>
+          <td>{% include "engagements/_status_badge.html" with status=e.status label=e.get_status_display %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">No engagements visible to you yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
 {% endblock %}
