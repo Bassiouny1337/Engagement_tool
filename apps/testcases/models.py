@@ -23,6 +23,10 @@ class TestCase(models.Model):
     domain_key = models.CharField(max_length=20, choices=DOMAIN_CHOICES)
     category = models.CharField(max_length=120)
     title = models.CharField(max_length=255)
+    source_scenario = models.ForeignKey(
+        "catalog.Scenario", null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="imported_test_cases",
+    )
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.NOT_STARTED
     )
@@ -52,21 +56,33 @@ class TestCase(models.Model):
 
 
 def seed_engagement_domain(engagement, domain_key, created_by=None):
-    """Create TestCase rows for a domain from the checklist template.
+    """Create TestCase rows for a domain from the DB checklist template.
 
-    Idempotent: skips titles that already exist for this engagement+domain.
-    Returns the number of test cases created.
+    Reads active catalog.ChecklistItem rows for the domain (falling back to the
+    bundled constants if the catalog is empty, e.g. before bootstrap).
+    Idempotent: skips (category, title) pairs that already exist for this
+    engagement+domain. Returns the number of test cases created.
     """
+    from apps.catalog.models import ChecklistItem
+
     existing = set(
         TestCase.objects.filter(
             engagement=engagement, domain_key=domain_key
         ).values_list("category", "title")
     )
-    created = 0
-    order = 0
+
+    items = list(
+        ChecklistItem.objects.filter(domain_key=domain_key, is_active=True)
+        .values_list("category", "title", "guidance", "order")
+    )
+    if not items and not ChecklistItem.objects.filter(domain_key=domain_key).exists():
+        # Fallback only when the catalog has no rows at all for this domain
+        # (e.g. a fresh install before bootstrap). If rows exist but are all
+        # inactive, that is a deliberate choice — seed nothing.
+        items = [(c, t, "", i) for i, (c, t) in enumerate(seed_test_cases(domain_key))]
+
     to_create = []
-    for category, title in seed_test_cases(domain_key):
-        order += 1
+    for category, title, guidance, order in items:
         if (category, title) in existing:
             continue
         to_create.append(
@@ -75,10 +91,25 @@ def seed_engagement_domain(engagement, domain_key, created_by=None):
                 domain_key=domain_key,
                 category=category,
                 title=title,
+                notes=guidance or "",
                 order=order,
                 updated_by=created_by,
             )
         )
-        created += 1
     TestCase.objects.bulk_create(to_create)
-    return created
+    return len(to_create)
+
+
+def import_scenario(engagement, scenario, created_by=None, category="Imported scenarios"):
+    """Create a TestCase on an engagement from a catalog Scenario."""
+    tc = TestCase.objects.create(
+        engagement=engagement,
+        domain_key=scenario.domain_key,
+        category=category,
+        title=scenario.title,
+        notes=scenario.as_testcase_notes(),
+        source_scenario=scenario,
+        is_custom=True,
+        updated_by=created_by,
+    )
+    return tc

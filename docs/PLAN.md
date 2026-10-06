@@ -37,7 +37,8 @@ config/            settings, urls, wsgi/asgi
 apps/accounts      custom User, 5 roles, capability matrix, permission helpers
 apps/clients       customer organizations (engagement owners)
 apps/engagements   engagement + lifecycle, scope, team assignment
-apps/domains       9 domains + checklist templates (constants.py)
+apps/domains       9 domain keys + bundled bootstrap checklists (constants.py)
+apps/catalog       DB-backed checklist templates + scenario library (super admin)
 apps/testcases     test cases, status, categories, evidence, comments
 apps/findings      vulnerabilities, CVSS, remediation, report-ready
 apps/scans         Nmap XML import, parsed hosts/ports/services
@@ -56,7 +57,13 @@ apps/dashboard     cross-engagement metrics & charts
 - **M3 Test cases** ✅ — checklists auto-seeded on domain add (signal),
   status tracking (not_started / in_progress / pass / fail / na / blocked),
   per-domain + overall progress bars, HTMX inline status board, filtering.
-  (Custom test cases via admin for now; inline-add UI is a later polish.)
+- **M3.5 Catalog & pentester workflow** ✅ — checklist templates and the
+  scenario library moved to the database (`apps.catalog`), bootstrapped from
+  the bundled constants via data migration. Super admin (`manage_catalog`
+  capability) manages both through an in-app UI (`/catalog/`). Seeding now
+  reads active ChecklistItems from the DB. Pentester board gained: add custom
+  test case inline, pull a scenario from the library into the engagement
+  (copying steps/payloads/references into notes), and inline HTMX notes.
 - **M4 Nmap** — upload → defused parse → hosts/ports/services; DRF endpoints;
   Cytoscape network graph + sortable tables; "service → scope item / test case".
 - **M5 Findings & reporting** — findings with CVSS, reviewer sign-off workflow,

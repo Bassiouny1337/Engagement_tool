@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseBadRequest
@@ -10,7 +11,7 @@ from apps.audit.models import AuditLog, record
 from apps.engagements.access import can_access_engagement, can_edit_engagement_content
 from apps.engagements.models import Engagement
 
-from .models import TestCase
+from .models import TestCase, import_scenario
 
 
 def _engagement_or_403(request, code):
@@ -70,4 +71,81 @@ def update_status(request, code, pk):
         return render(request, "testcases/_row.html",
                       {"tc": tc, "eng": eng, "statuses": TestCase.Status.choices,
                        "can_edit": True})
+    return redirect("testcases:board", code=eng.code)
+
+
+@login_required
+@require_POST
+def update_notes(request, code, pk):
+    eng = _engagement_or_403(request, code)
+    if not can_edit_engagement_content(request.user, eng):
+        raise PermissionDenied("Your role cannot edit test cases on this engagement.")
+    tc = get_object_or_404(TestCase, pk=pk, engagement=eng)
+    tc.notes = request.POST.get("notes", "")
+    tc.updated_by = request.user
+    tc.save(update_fields=["notes", "updated_by", "updated_at"])
+    record(request.user, AuditLog.Action.UPDATE,
+           f"{eng.code} testcase #{tc.pk} notes updated", target=tc, request=request)
+    if request.headers.get("HX-Request"):
+        from django.http import HttpResponse
+        return HttpResponse("Saved ✓")
+    return redirect("testcases:board", code=eng.code)
+
+
+@login_required
+@require_POST
+def add_custom(request, code):
+    eng = _engagement_or_403(request, code)
+    if not can_edit_engagement_content(request.user, eng):
+        raise PermissionDenied("Your role cannot edit test cases on this engagement.")
+    title = request.POST.get("title", "").strip()
+    domain_key = request.POST.get("domain_key", "").strip()
+    category = request.POST.get("category", "").strip() or "Custom"
+    if not title or domain_key not in eng.domain_keys:
+        return HttpResponseBadRequest("title and a valid in-scope domain are required")
+    tc = TestCase.objects.create(
+        engagement=eng, domain_key=domain_key, category=category,
+        title=title, is_custom=True, updated_by=request.user,
+    )
+    record(request.user, AuditLog.Action.CREATE,
+           f"{eng.code} custom testcase '{title}'", target=tc, request=request)
+    messages.success(request, "Custom test case added.")
+    return redirect("testcases:board", code=eng.code)
+
+
+@login_required
+def scenario_library(request, code):
+    """Browse the scenario library (filtered to the engagement's domains)."""
+    from apps.catalog.models import Scenario
+
+    eng = _engagement_or_403(request, code)
+    scenarios = Scenario.objects.filter(is_active=True, domain_key__in=eng.domain_keys)
+    domain = request.GET.get("domain")
+    q = request.GET.get("q", "").strip()
+    if domain:
+        scenarios = scenarios.filter(domain_key=domain)
+    if q:
+        scenarios = scenarios.filter(title__icontains=q)
+    return render(request, "testcases/scenario_library.html", {
+        "eng": eng, "scenarios": scenarios, "domain_keys": eng.domain_keys,
+        "active_domain": domain, "q": q,
+        "can_edit": can_edit_engagement_content(request.user, eng),
+    })
+
+
+@login_required
+@require_POST
+def pull_scenario(request, code, scenario_id):
+    from apps.catalog.models import Scenario
+
+    eng = _engagement_or_403(request, code)
+    if not can_edit_engagement_content(request.user, eng):
+        raise PermissionDenied("Your role cannot edit test cases on this engagement.")
+    scenario = get_object_or_404(Scenario, pk=scenario_id, is_active=True)
+    if scenario.domain_key not in eng.domain_keys:
+        return HttpResponseBadRequest("scenario domain is not in this engagement's scope")
+    tc = import_scenario(eng, scenario, created_by=request.user)
+    record(request.user, AuditLog.Action.IMPORT,
+           f"{eng.code} pulled scenario '{scenario.title}'", target=tc, request=request)
+    messages.success(request, f"Added “{scenario.title}” to the engagement.")
     return redirect("testcases:board", code=eng.code)

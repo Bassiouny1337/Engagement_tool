@@ -3,7 +3,10 @@
 {% block content %}
 <div class="row-between">
   <h1>Test cases · {{ eng.code }}</h1>
-  <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
+  <div class="row-gap">
+    <a href="{% url 'testcases:scenario_library' code=eng.code %}" class="btn-sm">📚 Scenario library</a>
+    <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
+  </div>
 </div>
 
 <div class="filters">
@@ -16,7 +19,22 @@
   {% endfor %}
 </div>
 
-{% if not can_edit %}<p class="muted">Read-only — your role or assignment does not permit editing here.</p>{% endif %}
+{% if can_edit %}
+  <details class="card">
+    <summary>+ Add custom test case</summary>
+    <form method="post" action="{% url 'testcases:add_custom' code=eng.code %}" class="row-gap wrap" style="margin-top:12px">
+      {% csrf_token %}
+      <select name="domain_key" required>
+        {% for key in domain_keys %}<option value="{{ key }}">{{ key }}</option>{% endfor %}
+      </select>
+      <input type="text" name="category" placeholder="Category (optional)">
+      <input type="text" name="title" placeholder="Test case title" required style="min-width:280px">
+      <button class="primary btn-sm">Add</button>
+    </form>
+  </details>
+{% else %}
+  <p class="muted">Read-only — your role or assignment does not permit editing here.</p>
+{% endif %}
 
 {% for domain, cats in grouped.items %}
   <section class="card">
@@ -33,6 +51,7 @@
     {% endfor %}
   </section>
 {% empty %}
-  <p class="muted">No test cases. Add a domain to the engagement to seed its checklist.</p>
+  <p class="muted">No test cases. Add a domain to the engagement to seed its checklist,
+    or pull from the scenario library.</p>
 {% endfor %}
 {% endblock %}

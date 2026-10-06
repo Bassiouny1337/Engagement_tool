@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Checklist templates{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Checklist templates</h1>
+  <a href="{% url 'catalog:checklist_new' %}" class="primary btn-sm">+ New item</a>
+</div>
+<div class="filters">
+  <a href="{% url 'catalog:checklist_list' %}" class="chip {% if not active_domain %}on{% endif %}">All</a>
+  {% for value, label in domains %}
+    <a href="?domain={{ value }}" class="chip {% if active_domain == value %}on{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+<table class="data compact">
+  <thead><tr><th>Domain</th><th>Category</th><th>Title</th><th>Order</th><th>Active</th><th></th></tr></thead>
+  <tbody>
+    {% for i in items %}
+      <tr>
+        <td class="muted">{{ i.get_domain_key_display }}</td>
+        <td>{{ i.category }}</td>
+        <td>{{ i.title }}</td>
+        <td>{{ i.order }}</td>
+        <td>{% if i.is_active %}✅{% else %}—{% endif %}</td>
+        <td class="row-gap">
+          <a href="{% url 'catalog:checklist_edit' pk=i.pk %}" class="link">edit</a>
+          <form method="post" action="{% url 'catalog:checklist_delete' pk=i.pk %}" class="inline"
+                onsubmit="return confirm('Delete this item?')">{% csrf_token %}<button class="link danger">del</button></form>
+        </td>
+      </tr>
+    {% empty %}<tr><td colspan="6" class="muted">No items.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

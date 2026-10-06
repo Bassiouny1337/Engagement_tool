@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{% if instance %}Edit{% else %}New{% endif %} checklist item{% endblock %}
+{% block content %}
+<h1>{% if instance %}Edit{% else %}New{% endif %} checklist item</h1>
+<form method="post" class="stack card">{% csrf_token %}{{ form.as_p }}
+  <div class="row-gap"><button class="primary">Save</button>
+    <a href="{% url 'catalog:checklist_list' %}" class="btn-sm">Cancel</a></div>
+</form>
+{% endblock %}

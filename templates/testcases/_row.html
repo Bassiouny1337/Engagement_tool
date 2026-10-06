@@ -1,5 +1,23 @@
 <tr id="tc-{{ tc.pk }}" class="tc-row tc-{{ tc.status }}">
-  <td class="tc-title">{{ tc.title }}</td>
+  <td class="tc-title">
+    {{ tc.title }}
+    {% if tc.source_scenario %}<span class="chip">scenario</span>{% endif %}
+    {% if tc.is_custom %}<span class="chip">custom</span>{% endif %}
+    <details class="notes">
+      <summary>notes{% if tc.notes %} •{% endif %}</summary>
+      {% if can_edit %}
+        <form hx-post="{% url 'testcases:update_notes' code=eng.code pk=tc.pk %}"
+              hx-target="#notes-status-{{ tc.pk }}" hx-swap="innerHTML"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+          <textarea name="notes" rows="4">{{ tc.notes }}</textarea>
+          <div class="row-gap"><button class="btn-sm" type="submit">Save notes</button>
+            <span id="notes-status-{{ tc.pk }}" class="muted"></span></div>
+        </form>
+      {% else %}
+        <pre class="notes-ro">{{ tc.notes|default:"—" }}</pre>
+      {% endif %}
+    </details>
+  </td>
   <td class="w-status">
     {% if can_edit %}
       <select name="status"

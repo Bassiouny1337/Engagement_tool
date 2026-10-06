@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Scenario library{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Scenario library</h1>
+  <a href="{% url 'catalog:scenario_new' %}" class="primary btn-sm">+ New scenario</a>
+</div>
+<form method="get" class="filters">
+  <a href="{% url 'catalog:scenario_list' %}" class="chip {% if not active_domain %}on{% endif %}">All</a>
+  {% for value, label in domains %}
+    <a href="?domain={{ value }}" class="chip {% if active_domain == value %}on{% endif %}">{{ label }}</a>
+  {% endfor %}
+  <input type="search" name="q" value="{{ q }}" placeholder="search title…">
+</form>
+<table class="data compact">
+  <thead><tr><th>Domain</th><th>Title</th><th>Tags</th><th>Active</th><th></th></tr></thead>
+  <tbody>
+    {% for s in scenarios %}
+      <tr>
+        <td class="muted">{{ s.get_domain_key_display }}</td>
+        <td>{{ s.title }}</td>
+        <td>{% for t in s.tag_list %}<span class="chip">{{ t }}</span>{% endfor %}</td>
+        <td>{% if s.is_active %}✅{% else %}—{% endif %}</td>
+        <td class="row-gap">
+          <a href="{% url 'catalog:scenario_edit' pk=s.pk %}" class="link">edit</a>
+          <form method="post" action="{% url 'catalog:scenario_delete' pk=s.pk %}" class="inline"
+                onsubmit="return confirm('Delete this scenario?')">{% csrf_token %}<button class="link danger">del</button></form>
+        </td>
+      </tr>
+    {% empty %}<tr><td colspan="5" class="muted">No scenarios yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

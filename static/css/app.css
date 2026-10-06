@@ -155,3 +155,9 @@ table.data.compact th, table.data.compact td { padding: 6px 8px; font-size: .9re
 .progress-fill { background: var(--accent-2); height: 100%; transition: width .3s; }
 .progress-label { position: absolute; inset: 0; text-align: center; font-size: .72rem; line-height: 18px; color: var(--text); }
 .card .stat { font-size: 2.2rem; font-weight: 700; margin: 4px 0 10px; }
+details.notes { margin-top: 6px; }
+details.notes summary { cursor: pointer; font-size: .78rem; color: var(--muted); font-family: -apple-system, sans-serif; }
+details.notes textarea { width: 100%; margin: 6px 0; }
+.notes-ro { white-space: pre-wrap; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; font-size: .85rem; overflow-x: auto; }
+details.card summary { cursor: pointer; font-weight: 600; }

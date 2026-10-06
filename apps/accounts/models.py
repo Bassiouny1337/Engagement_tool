@@ -23,7 +23,7 @@ ROLE_CAPABILITIES = {
         "manage_users", "manage_roles", "view_all_engagements",
         "manage_engagements", "edit_testcases", "manage_findings",
         "review", "sign_off", "import_scans", "export_reports",
-        "view_audit_log",
+        "view_audit_log", "manage_catalog",
     },
     Role.MANAGER: {
         "view_all_engagements", "manage_engagements", "edit_testcases",

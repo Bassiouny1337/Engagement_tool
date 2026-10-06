@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Catalog{% endblock %}
+{% block content %}
+<h1>Catalog</h1>
+<p class="muted">Super-admin library of checklist templates and reusable scenarios.</p>
+<div class="grid-2">
+  <section class="card">
+    <h2>Checklist templates</h2>
+    <p class="stat">{{ checklist_count }}</p>
+    <p class="muted">Per-domain items that seed new engagements.</p>
+    <a href="{% url 'catalog:checklist_list' %}" class="btn-sm">Manage checklists →</a>
+  </section>
+  <section class="card">
+    <h2>Scenario library</h2>
+    <p class="stat">{{ scenario_count }}</p>
+    <p class="muted">Scenarios faced before — steps, payloads, references.</p>
+    <a href="{% url 'catalog:scenario_list' %}" class="btn-sm">Manage scenarios →</a>
+  </section>
+</div>
+{% endblock %}

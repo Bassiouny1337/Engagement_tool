@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.clients",
     "apps.engagements",
     "apps.domains",
+    "apps.catalog",
     "apps.testcases",
     "apps.findings",
     "apps.scans",

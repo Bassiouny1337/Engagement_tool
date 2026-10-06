@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Scenario library · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Scenario library</h1>
+  <a href="{% url 'testcases:board' code=eng.code %}" class="btn-sm">← Board</a>
+</div>
+<p class="muted">Reusable scenarios for this engagement's domains. Pull one in to add it as a test case.</p>
+
+<form method="get" class="filters">
+  <a href="{% url 'testcases:scenario_library' code=eng.code %}" class="chip {% if not active_domain %}on{% endif %}">All</a>
+  {% for key in domain_keys %}
+    <a href="?domain={{ key }}" class="chip {% if active_domain == key %}on{% endif %}">{{ key }}</a>
+  {% endfor %}
+  <input type="search" name="q" value="{{ q }}" placeholder="search title…">
+</form>
+
+{% for s in scenarios %}
+  <section class="card">
+    <div class="row-between">
+      <h2>{{ s.title }}</h2>
+      {% if can_edit %}
+        <form method="post" action="{% url 'testcases:pull_scenario' code=eng.code scenario_id=s.pk %}">
+          {% csrf_token %}<button class="primary btn-sm">+ Add to engagement</button>
+        </form>
+      {% endif %}
+    </div>
+    <p class="muted">{{ s.get_domain_key_display }}
+      {% for t in s.tag_list %}<span class="chip">{{ t }}</span>{% endfor %}</p>
+    <p>{{ s.summary }}</p>
+    {% if s.steps %}<h3 class="cat">Steps</h3><pre class="notes-ro">{{ s.steps }}</pre>{% endif %}
+    {% if s.payloads %}<h3 class="cat">Payloads</h3><pre class="notes-ro">{{ s.payloads }}</pre>{% endif %}
+    {% if s.references %}<h3 class="cat">References</h3><pre class="notes-ro">{{ s.references }}</pre>{% endif %}
+  </section>
+{% empty %}
+  <p class="muted">No scenarios for this engagement's domains yet. A super admin can add them in the Catalog.</p>
+{% endfor %}
+{% endblock %}
