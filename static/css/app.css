@@ -167,3 +167,4 @@ details.card summary { cursor: pointer; font-weight: 600; }
 .sevb-low { background: #1f6feb; color: #fff; }
 .sevb-info { background: #6e7681; color: #fff; }
 .report-md { max-height: 70vh; overflow: auto; }
+#graph { height: 420px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }

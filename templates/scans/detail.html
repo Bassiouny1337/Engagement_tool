@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ scan.filename }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <h1>{{ scan.filename }}</h1>
+    <p class="muted">{{ scan.host_count }} hosts · {{ scan.up_count }} up ·
+      {{ scan.open_port_count }} open ports{% if scan.args %} · <span class="mono">{{ scan.args }}</span>{% endif %}</p>
+  </div>
+  <a href="{% url 'scans:list' code=eng.code %}" class="btn-sm">← Scans</a>
+</div>
+
+<section class="card">
+  <h2>Network map</h2>
+  <p class="muted">Click a host to filter the tables below. Hover for details.</p>
+  <div id="graph"></div>
+</section>
+
+<div class="filters">
+  <input type="search" id="tableFilter" placeholder="filter table (ip, port, service)…" style="min-width:260px">
+  <span id="activeHost" class="chip" style="display:none"></span>
+  <a href="#" id="clearHost" class="chip" style="display:none">clear host filter ✕</a>
+</div>
+
+<section class="card">
+  <h2>Hosts &amp; services</h2>
+  <table class="data compact" id="svcTable">
+    <thead><tr>
+      <th>Host</th><th>State</th><th>OS</th><th>Port</th><th>Proto</th>
+      <th>Service</th><th>Product / version</th>
+      {% if can_scope or can_edit %}<th>Actions</th>{% endif %}
+    </tr></thead>
+    <tbody>
+      {% for host in scan.hosts %}
+        {% for p in host.ports %}
+          <tr data-host="{{ host.ip }}">
+            <td class="mono">{{ host.ip }}{% if host.hostnames %}<br><span class="muted">{{ host.hostnames|join:", " }}</span>{% endif %}</td>
+            <td>{{ host.state }}</td>
+            <td class="muted">{{ host.os|default:"—" }}</td>
+            <td class="mono">{{ p.port }}</td>
+            <td>{{ p.protocol }}</td>
+            <td><span class="badge tcb-{% if p.state == 'open' %}pass{% else %}not_started{% endif %}">{{ p.service.name|default:"?" }}</span> <span class="muted">({{ p.state }})</span></td>
+            <td class="muted">{{ p.service.product }} {{ p.service.version }}</td>
+            {% if can_scope or can_edit %}
+              <td class="row-gap">
+                {% if can_scope %}
+                  <form method="post" action="{% url 'scans:add_scope' code=eng.code pk=scan.pk %}" class="inline">
+                    {% csrf_token %}<input type="hidden" name="ip" value="{{ host.ip }}">
+                    <button class="link" title="Add host to scope">+scope</button></form>
+                {% endif %}
+                {% if can_edit and p.state == 'open' %}
+                  <form method="post" action="{% url 'scans:add_testcase' code=eng.code pk=scan.pk %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="ip" value="{{ host.ip }}">
+                    <input type="hidden" name="port" value="{{ p.port }}">
+                    <input type="hidden" name="service" value="{{ p.service.name }}">
+                    <button class="link" title="Create a network test case">+test</button></form>
+                {% endif %}
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      {% empty %}
+        <tr><td colspan="8" class="muted">No hosts in this scan.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<script id="els" type="application/json">{{ elements_json|safe }}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"
+        referrerpolicy="no-referrer"></script>
+<script src="{% static 'js/scan_graph.js' %}"></script>
+{% endblock %}

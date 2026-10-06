@@ -9,9 +9,18 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the full architecture and roadmap.
 
 ## Status
 
-**M1 (Foundations) complete.** Project skeleton, custom user model with 5
-roles and a capability matrix, append-only audit log, authentication, a
-dashboard shell, and the per-domain checklist data are in place.
+**Core complete (M1–M5 + Nmap).** Working end to end:
+
+- Custom user model with 5 roles + capability matrix, append-only audit log, auth.
+- Engagements with a lifecycle, scope items, in-scope domains, and team assignment
+  (role grants capability, membership grants reach).
+- Per-domain test-case board with status tracking, progress bars, inline notes,
+  custom test cases, and pulling scenarios from the library.
+- Super-admin catalog: DB-backed checklist templates + a reusable scenario library,
+  managed in-app at `/catalog/`.
+- Findings with severity/CVSS and reviewer sign-off; Markdown report preview + download.
+- Nmap XML import (parsed safely with defusedxml), an interactive Cytoscape network
+  graph, and one-click conversion of discovered services into scope items / test cases.
 
 ## Quick start (dev)
 

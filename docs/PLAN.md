@@ -64,8 +64,12 @@ apps/dashboard     cross-engagement metrics & charts
   reads active ChecklistItems from the DB. Pentester board gained: add custom
   test case inline, pull a scenario from the library into the engagement
   (copying steps/payloads/references into notes), and inline HTMX notes.
-- **M4 Nmap** — upload → defused parse → hosts/ports/services; DRF endpoints;
-  Cytoscape network graph + sortable tables; "service → scope item / test case".
+- **M4 Nmap** ✅ — upload nmap `-oX` XML → safe parse with defusedxml (DTD /
+  external entities / XXE rejected) → hosts/ports/services stored as JSON;
+  Cytoscape network graph (scan → hosts → open services) with click-to-filter;
+  host/service table with text filter; one-click "service → scope item" and
+  "service → network test case" (auto-adds the network domain). import_scans
+  gated; imports audit-logged.
 - **M5 Findings & reporting** ✅ — findings with severity + CVSS (vector/score),
   status, affected/description/impact/remediation/references; create a finding
   pre-filled from a failed test case; reviewer sign-off (review capability +

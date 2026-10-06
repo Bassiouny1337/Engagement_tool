@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Import scan{% endblock %}
+{% block content %}
+<h1>Import nmap scan · {{ eng.code }}</h1>
+<p class="muted">Run <code>nmap -oX scan.xml &lt;targets&gt;</code> and upload the XML. Parsed safely with defusedxml.</p>
+<form method="post" enctype="multipart/form-data" class="stack card">{% csrf_token %}{{ form.as_p }}
+  <div class="row-gap"><button class="primary">Import</button>
+    <a href="{% url 'scans:list' code=eng.code %}" class="btn-sm">Cancel</a></div>
+</form>
+{% endblock %}

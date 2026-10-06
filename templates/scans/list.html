@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Scans · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Nmap scans · {{ eng.code }}</h1>
+  <div class="row-gap">
+    {% if can_import %}<a href="{% url 'scans:upload' code=eng.code %}" class="primary btn-sm">⬆ Import scan</a>{% endif %}
+    <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
+  </div>
+</div>
+<table class="data">
+  <thead><tr><th>File</th><th>Hosts</th><th>Up</th><th>Open ports</th><th>Uploaded</th></tr></thead>
+  <tbody>
+    {% for s in scans %}
+      <tr>
+        <td><a href="{% url 'scans:detail' code=eng.code pk=s.pk %}">{{ s.filename }}</a></td>
+        <td>{{ s.host_count }}</td><td>{{ s.up_count }}</td><td>{{ s.open_port_count }}</td>
+        <td class="muted">{{ s.created_at|date:"Y-m-d H:i" }}</td>
+      </tr>
+    {% empty %}<tr><td colspan="5" class="muted">No scans imported yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}
