@@ -66,8 +66,11 @@ apps/dashboard     cross-engagement metrics & charts
   (copying steps/payloads/references into notes), and inline HTMX notes.
 - **M4 Nmap** — upload → defused parse → hosts/ports/services; DRF endpoints;
   Cytoscape network graph + sortable tables; "service → scope item / test case".
-- **M5 Findings & reporting** — findings with CVSS, reviewer sign-off workflow,
-  exports, read-only views.
+- **M5 Findings & reporting** ✅ — findings with severity + CVSS (vector/score),
+  status, affected/description/impact/remediation/references; create a finding
+  pre-filled from a failed test case; reviewer sign-off (review capability +
+  engagement membership); Markdown report (overview table, scope, coverage,
+  detailed findings) with in-app preview and download. export_reports gated.
 - **M6 Polish** — dashboard charts, hardening, full test suite, Docker, docs.
 
 ## Core data model (target)

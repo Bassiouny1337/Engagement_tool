@@ -3,6 +3,9 @@
     {{ tc.title }}
     {% if tc.source_scenario %}<span class="chip">scenario</span>{% endif %}
     {% if tc.is_custom %}<span class="chip">custom</span>{% endif %}
+    {% if can_edit and tc.status == "fail" %}
+      <a class="chip" href="{% url 'findings:create' code=eng.code %}?from_testcase={{ tc.pk }}">+ finding</a>
+    {% endif %}
     <details class="notes">
       <summary>notes{% if tc.notes %} •{% endif %}</summary>
       {% if can_edit %}

@@ -161,3 +161,9 @@ details.notes textarea { width: 100%; margin: 6px 0; }
 .notes-ro { white-space: pre-wrap; background: var(--surface-2); border: 1px solid var(--border);
   border-radius: 8px; padding: 10px; font-size: .85rem; overflow-x: auto; }
 details.card summary { cursor: pointer; font-weight: 600; }
+.sevb-critical { background: #da3633; color: #fff; }
+.sevb-high { background: #f85149; color: #fff; }
+.sevb-medium { background: #9e6a03; color: #fff; }
+.sevb-low { background: #1f6feb; color: #fff; }
+.sevb-info { background: #6e7681; color: #fff; }
+.report-md { max-height: 70vh; overflow: auto; }

@@ -7,7 +7,11 @@
     <p class="muted">{{ eng.code }} · {{ eng.client.name }}
       · {% include "engagements/_status_badge.html" with status=eng.status label=eng.get_status_display %}</p>
   </div>
-  <a href="{% url 'testcases:board' code=eng.code %}" class="primary btn-sm">Test-case board →</a>
+  <div class="row-gap">
+    <a href="{% url 'findings:list' code=eng.code %}" class="btn-sm">Findings</a>
+    <a href="{% url 'reporting:preview' code=eng.code %}" class="btn-sm">Report</a>
+    <a href="{% url 'testcases:board' code=eng.code %}" class="primary btn-sm">Test-case board →</a>
+  </div>
 </div>
 
 {% if eng.summary %}<p>{{ eng.summary }}</p>{% endif %}

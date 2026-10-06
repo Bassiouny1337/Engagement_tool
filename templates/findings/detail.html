@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ f.title }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <h1>{{ f.title }}</h1>
+    <p><span class="badge sevb-{{ f.severity }}">{{ f.get_severity_display }}</span>
+      · {{ f.get_status_display }}
+      {% if f.cvss_score is not None %}· CVSS {{ f.cvss_score }}{% endif %}
+      {% if f.is_reviewed %}· <span class="badge tcb-pass">reviewed by {{ f.reviewed_by }}</span>{% endif %}</p>
+  </div>
+  <div class="row-gap">
+    {% if can_edit %}<a href="{% url 'findings:edit' code=eng.code pk=f.pk %}" class="btn-sm">Edit</a>{% endif %}
+    {% if can_review and not f.is_reviewed %}
+      <form method="post" action="{% url 'findings:review' code=eng.code pk=f.pk %}">{% csrf_token %}
+        <button class="primary btn-sm">Mark reviewed</button></form>
+    {% endif %}
+    <a href="{% url 'findings:list' code=eng.code %}" class="btn-sm">← Findings</a>
+  </div>
+</div>
+
+{% if f.cvss_vector %}<p class="mono">{{ f.cvss_vector }}</p>{% endif %}
+{% if f.source_test_case %}<p class="muted">From test case: {{ f.source_test_case.title }}</p>{% endif %}
+
+<section class="card"><h2>Affected</h2><pre class="notes-ro">{{ f.affected|default:"—" }}</pre></section>
+<section class="card"><h2>Description</h2><pre class="notes-ro">{{ f.description|default:"—" }}</pre></section>
+<section class="card"><h2>Impact</h2><pre class="notes-ro">{{ f.impact|default:"—" }}</pre></section>
+<section class="card"><h2>Remediation</h2><pre class="notes-ro">{{ f.remediation|default:"—" }}</pre></section>
+{% if f.references %}<section class="card"><h2>References</h2><pre class="notes-ro">{{ f.references }}</pre></section>{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Report · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Report preview · {{ eng.code }}</h1>
+  <div class="row-gap">
+    <a href="{% url 'reporting:download' code=eng.code %}" class="primary btn-sm">⬇ Download .md</a>
+    <a href="{% url 'findings:list' code=eng.code %}" class="btn-sm">← Findings</a>
+  </div>
+</div>
+<section class="card"><pre class="notes-ro report-md">{{ markdown }}</pre></section>
+{% endblock %}
