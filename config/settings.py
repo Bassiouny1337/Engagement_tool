@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "apps.engagements",
     "apps.domains",
     "apps.catalog",
+    "apps.notebook",
     "apps.testcases",
     "apps.findings",
     "apps.scans",

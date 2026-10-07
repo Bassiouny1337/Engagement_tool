@@ -21,6 +21,8 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the full architecture and roadmap.
 - Findings with severity/CVSS and reviewer sign-off; Markdown report preview + download.
 - Nmap XML import (parsed safely with defusedxml), an interactive Cytoscape network
   graph, and one-click conversion of discovered services into scope items / test cases.
+- Per-engagement notebook (Notion-like): nested Markdown wiki pages with a live
+  preview, rendered server-side and sanitized with nh3 against stored XSS.
 
 ## Quick start (dev)
 

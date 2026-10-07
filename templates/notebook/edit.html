@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% if instance %}Edit{% else %}New{% endif %} page · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>{% if instance %}Edit page{% else %}New page{% endif %}</h1>
+  <a href="{% if instance %}{% url 'notebook:page' code=eng.code slug=instance.slug %}{% else %}{% url 'notebook:home' code=eng.code %}{% endif %}" class="btn-sm">Cancel</a>
+</div>
+
+<form method="post" class="stack">
+  {% csrf_token %}
+  <label>Title {{ form.title }}</label>
+  <label>Parent page {{ form.parent }}</label>
+
+  <div class="nb-editor">
+    <div class="nb-pane">
+      <h3 class="cat">Markdown</h3>
+      {{ form.content }}
+    </div>
+    <div class="nb-pane">
+      <h3 class="cat">Preview</h3>
+      <article id="md-preview" class="md-body notes-ro"
+               hx-post="{% url 'notebook:preview' code=eng.code %}"
+               hx-trigger="load, keyup changed delay:400ms from:#md-input"
+               hx-include="#md-input" hx-swap="innerHTML"
+               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <span class="muted">Start typing…</span>
+      </article>
+    </div>
+  </div>
+
+  <div class="row-gap"><button class="primary">Save</button></div>
+</form>
+{% endblock %}

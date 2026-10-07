@@ -16,5 +16,6 @@ urlpatterns = [
     path("findings/", include("apps.findings.urls")),
     path("reports/", include("apps.reporting.urls")),
     path("scans/", include("apps.scans.urls")),
+    path("notebook/", include("apps.notebook.urls")),
     path("", include("apps.dashboard.urls")),
 ]

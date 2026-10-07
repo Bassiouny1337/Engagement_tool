@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Notebook · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Notebook · {{ eng.code }}</h1>
+  <div class="row-gap">
+    {% if can_edit %}<a href="{% url 'notebook:create' code=eng.code %}" class="primary btn-sm">+ New page</a>{% endif %}
+    <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
+  </div>
+</div>
+
+<div class="nb-layout">
+  <aside class="nb-side card">
+    <h3 class="cat">Pages</h3>
+    {% if tree %}{% include "notebook/_tree.html" with nodes=tree %}
+    {% else %}<p class="muted">No pages yet.</p>{% endif %}
+  </aside>
+
+  <section class="nb-main">
+    {% if page %}
+      {% if page.ancestors %}
+        <p class="muted nb-crumbs">
+          {% for a in page.ancestors %}<a href="{% url 'notebook:page' code=eng.code slug=a.slug %}">{{ a.title }}</a> / {% endfor %}{{ page.title }}
+        </p>
+      {% endif %}
+      <div class="row-between">
+        <h2>{{ page.title }}</h2>
+        {% if can_edit %}
+          <div class="row-gap">
+            <a href="{% url 'notebook:edit' code=eng.code slug=page.slug %}" class="btn-sm">Edit</a>
+            <form method="post" action="{% url 'notebook:delete' code=eng.code slug=page.slug %}"
+                  onsubmit="return confirm('Delete this page and all sub-pages?')">
+              {% csrf_token %}<button class="link danger">Delete</button></form>
+          </div>
+        {% endif %}
+      </div>
+      <p class="muted nb-meta">Updated {{ page.updated_at|date:"Y-m-d H:i" }}{% if page.updated_by %} by {{ page.updated_by.get_full_name|default:page.updated_by.username }}{% endif %}</p>
+      <article class="md-body">{{ html|safe }}</article>
+    {% else %}
+      <p class="muted">Select a page, or create the first one{% if can_edit %} with <strong>+ New page</strong>{% endif %}.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

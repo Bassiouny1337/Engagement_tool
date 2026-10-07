@@ -39,6 +39,7 @@ apps/clients       customer organizations (engagement owners)
 apps/engagements   engagement + lifecycle, scope, team assignment
 apps/domains       9 domain keys + bundled bootstrap checklists (constants.py)
 apps/catalog       DB-backed checklist templates + scenario library (super admin)
+apps/notebook      per-engagement Markdown wiki (nested pages, Notion-like)
 apps/testcases     test cases, status, categories, evidence, comments
 apps/findings      vulnerabilities, CVSS, remediation, report-ready
 apps/scans         Nmap XML import, parsed hosts/ports/services
@@ -75,6 +76,12 @@ apps/dashboard     cross-engagement metrics & charts
   pre-filled from a failed test case; reviewer sign-off (review capability +
   engagement membership); Markdown report (overview table, scope, coverage,
   detailed findings) with in-app preview and download. export_reports gated.
+- **Notebook (Notion-like)** ✅ — per-engagement wiki of nested Markdown pages
+  (`apps.notebook`): tree sidebar, breadcrumbs, create/edit/delete with cascade,
+  live HTML preview (HTMX). Markdown rendered server-side and sanitized with nh3
+  (ammonia) against an explicit allowlist — scripts, event handlers and
+  javascript: URLs stripped — to prevent stored XSS. Same role+membership access
+  as the rest of the engagement.
 - **M6 Polish** — dashboard charts, hardening, full test suite, Docker, docs.
 
 ## Core data model (target)

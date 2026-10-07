@@ -1,0 +1,9 @@
+<ul class="nb-tree">
+  {% for node, children in nodes %}
+    <li>
+      <a href="{% url 'notebook:page' code=eng.code slug=node.slug %}"
+         class="{% if page and page.id == node.id %}on{% endif %}">{{ node.title }}</a>
+      {% if children %}{% include "notebook/_tree.html" with nodes=children %}{% endif %}
+    </li>
+  {% endfor %}
+</ul>
