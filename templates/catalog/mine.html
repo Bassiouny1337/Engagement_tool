@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}My checklist & scenarios{% endblock %}
+{% block content %}
+<h1>My checklist &amp; scenarios</h1>
+<p class="muted">Your personal items. Request promotion to add one to the shared catalog for all pentesters (an admin/manager approves).</p>
+
+<section class="card">
+  <div class="row-between"><h2>My checklist items</h2>
+    <a href="{% url 'catalog:my_checklist_new' %}" class="primary btn-sm">+ New item</a></div>
+  <table class="data compact">
+    <thead><tr><th>Domain</th><th>Category</th><th>Title</th><th></th></tr></thead>
+    <tbody>
+      {% for i in checklist_items %}
+        <tr>
+          <td class="muted">{{ i.get_domain_key_display }}</td><td>{{ i.category }}</td><td>{{ i.title }}</td>
+          <td class="row-gap">
+            <a href="{% url 'catalog:my_checklist_edit' pk=i.pk %}" class="link">edit</a>
+            <form method="post" action="{% url 'catalog:request_promotion' kind='checklist' pk=i.pk %}" class="inline">{% csrf_token %}<button class="link">request→main</button></form>
+            <form method="post" action="{% url 'catalog:my_item_delete' kind='checklist' pk=i.pk %}" class="inline">{% csrf_token %}<button class="link danger">del</button></form>
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="4" class="muted">None yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <div class="row-between"><h2>My scenarios</h2>
+    <a href="{% url 'catalog:my_scenario_new' %}" class="primary btn-sm">+ New scenario</a></div>
+  <table class="data compact">
+    <thead><tr><th>Domain</th><th>Title</th><th>Tags</th><th></th></tr></thead>
+    <tbody>
+      {% for s in scenarios %}
+        <tr>
+          <td class="muted">{{ s.get_domain_key_display }}</td><td>{{ s.title }}</td>
+          <td>{% for t in s.tag_list %}<span class="chip">{{ t }}</span>{% endfor %}</td>
+          <td class="row-gap">
+            <a href="{% url 'catalog:my_scenario_edit' pk=s.pk %}" class="link">edit</a>
+            <form method="post" action="{% url 'catalog:request_promotion' kind='scenario' pk=s.pk %}" class="inline">{% csrf_token %}<button class="link">request→main</button></form>
+            <form method="post" action="{% url 'catalog:my_item_delete' kind='scenario' pk=s.pk %}" class="inline">{% csrf_token %}<button class="link danger">del</button></form>
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="4" class="muted">None yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>My promotion requests</h2>
+  <table class="data compact">
+    <thead><tr><th>Type</th><th>Item</th><th>Status</th><th>Decided by</th></tr></thead>
+    <tbody>
+      {% for r in my_requests %}
+        <tr><td>{{ r.get_kind_display }}</td><td>{{ r.source }}</td>
+          <td><span class="badge tcb-{% if r.status == 'approved' %}pass{% elif r.status == 'rejected' %}fail{% else %}in_progress{% endif %}">{{ r.get_status_display }}</span></td>
+          <td class="muted">{{ r.decided_by|default:"—" }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="muted">No requests.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

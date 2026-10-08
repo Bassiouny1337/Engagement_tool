@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Contribution requests{% endblock %}
+{% block content %}
+<h1>Contribution requests</h1>
+<div class="filters">
+  <a href="?status=pending" class="chip {% if active_status == 'pending' %}on{% endif %}">Pending</a>
+  <a href="?status=approved" class="chip {% if active_status == 'approved' %}on{% endif %}">Approved</a>
+  <a href="?status=rejected" class="chip {% if active_status == 'rejected' %}on{% endif %}">Rejected</a>
+</div>
+<table class="data">
+  <thead><tr><th>Type</th><th>Item</th><th>Domain</th><th>From</th><th>Note</th><th>Status</th>{% if active_status == 'pending' %}<th>Decision</th>{% endif %}</tr></thead>
+  <tbody>
+    {% for r in requests %}
+      <tr>
+        <td>{{ r.get_kind_display }}</td>
+        <td>{% if r.source %}{{ r.source.title }}{% else %}<span class="muted">(deleted)</span>{% endif %}</td>
+        <td class="muted">{% if r.source %}{{ r.source.get_domain_key_display }}{% endif %}</td>
+        <td>{{ r.requested_by.get_full_name|default:r.requested_by.username }}</td>
+        <td class="muted">{{ r.note }}</td>
+        <td><span class="badge tcb-{% if r.status == 'approved' %}pass{% elif r.status == 'rejected' %}fail{% else %}in_progress{% endif %}">{{ r.get_status_display }}</span></td>
+        {% if active_status == 'pending' %}
+          <td class="row-gap">
+            <form method="post" action="{% url 'catalog:contribution_approve' pk=r.pk %}" class="inline">{% csrf_token %}<button class="primary btn-sm">Approve</button></form>
+            <form method="post" action="{% url 'catalog:contribution_reject' pk=r.pk %}" class="inline">{% csrf_token %}<button class="btn-sm">Reject</button></form>
+          </td>
+        {% endif %}
+      </tr>
+    {% empty %}<tr><td colspan="7" class="muted">No {{ active_status }} requests.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

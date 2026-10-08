@@ -2,7 +2,7 @@
 {% block title %}{{ eng.code }} · Test cases{% endblock %}
 {% block content %}
 <div class="row-between">
-  <h1>Test cases · {{ eng.code }}</h1>
+  <h1>Test cases · {{ eng.code }}{% if active_asset %} · {{ active_asset.name }}{% endif %}</h1>
   <div class="row-gap">
     <a href="{% url 'testcases:scenario_library' code=eng.code %}" class="btn-sm">📚 Scenario library</a>
     <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
@@ -10,12 +10,10 @@
 </div>
 
 <div class="filters">
-  <span class="muted">Domain:</span>
-  <a href="?{% if active_status %}status={{ active_status }}{% endif %}"
-     class="chip {% if not active_domain %}on{% endif %}">All</a>
-  {% for key in domain_keys %}
-    <a href="?domain={{ key }}{% if active_status %}&status={{ active_status }}{% endif %}"
-       class="chip {% if active_domain == key %}on{% endif %}">{{ key }}</a>
+  <span class="muted">Asset:</span>
+  <a href="{% url 'testcases:board' code=eng.code %}" class="chip {% if not active_asset %}on{% endif %}">All</a>
+  {% for a in assets %}
+    <a href="?asset={{ a.slug }}" class="chip {% if active_asset and active_asset.slug == a.slug %}on{% endif %}">{{ a.name }}</a>
   {% endfor %}
 </div>
 
@@ -24,9 +22,18 @@
     <summary>+ Add custom test case</summary>
     <form method="post" action="{% url 'testcases:add_custom' code=eng.code %}" class="row-gap wrap" style="margin-top:12px">
       {% csrf_token %}
-      <select name="domain_key" required>
-        {% for key in domain_keys %}<option value="{{ key }}">{{ key }}</option>{% endfor %}
-      </select>
+      {% if active_asset %}
+        <input type="hidden" name="asset" value="{{ active_asset.slug }}">
+        <select name="function">
+          <option value="">(no function)</option>
+          {% for f in functions %}<option value="{{ f.pk }}">{{ f.name }}</option>{% endfor %}
+        </select>
+      {% else %}
+        <select name="domain_key" required>
+          {% for a in assets %}{% endfor %}
+          {% for key in eng.domain_keys %}<option value="{{ key }}">{{ key }}</option>{% endfor %}
+        </select>
+      {% endif %}
       <input type="text" name="category" placeholder="Category (optional)">
       <input type="text" name="title" placeholder="Test case title" required style="min-width:280px">
       <button class="primary btn-sm">Add</button>
@@ -36,9 +43,9 @@
   <p class="muted">Read-only — your role or assignment does not permit editing here.</p>
 {% endif %}
 
-{% for domain, cats in grouped.items %}
+{% for outer, cats in grouped.items %}
   <section class="card">
-    <h2>{{ domain }}</h2>
+    <h2>{{ outer }}</h2>
     {% for category, cases in cats.items %}
       <h3 class="cat">{{ category }}</h3>
       <table class="data compact">
@@ -51,7 +58,7 @@
     {% endfor %}
   </section>
 {% empty %}
-  <p class="muted">No test cases. Add a domain to the engagement to seed its checklist,
-    or pull from the scenario library.</p>
+  <p class="muted">No test cases{% if active_asset %} for this asset{% endif %}. Add a domain to the
+    engagement to seed its checklist, add custom cases, or pull from the scenario library.</p>
 {% endfor %}
 {% endblock %}

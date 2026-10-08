@@ -80,10 +80,13 @@ def seed_engagement_domain(engagement, domain_key, created_by=None):
     )
 
     items = list(
-        ChecklistItem.objects.filter(domain_key=domain_key, is_active=True)
-        .values_list("category", "title", "guidance", "order")
+        ChecklistItem.objects.filter(
+            domain_key=domain_key, is_active=True, owner__isnull=True
+        ).values_list("category", "title", "guidance", "order")
     )
-    if not items and not ChecklistItem.objects.filter(domain_key=domain_key).exists():
+    if not items and not ChecklistItem.objects.filter(
+        domain_key=domain_key, owner__isnull=True
+    ).exists():
         # Fallback only when the catalog has no rows at all for this domain
         # (e.g. a fresh install before bootstrap). If rows exist but are all
         # inactive, that is a deliberate choice — seed nothing.

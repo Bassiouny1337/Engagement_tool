@@ -24,27 +24,36 @@ def _engagement_or_403(request, code):
 @login_required
 def board(request, code):
     eng = _engagement_or_403(request, code)
-    qs = eng.test_cases.select_related("assignee")
+    qs = eng.test_cases.select_related("assignee", "asset", "function")
 
-    domain = request.GET.get("domain")
+    asset_slug = request.GET.get("asset")
     status = request.GET.get("status")
-    if domain:
-        qs = qs.filter(domain_key=domain)
     if status:
         qs = qs.filter(status=status)
 
+    active_asset = None
+    if asset_slug:
+        active_asset = eng.assets.filter(slug=asset_slug).first()
+        qs = qs.filter(asset=active_asset) if active_asset else qs.none()
+
+    # When an asset is selected, group by Function (then category). Otherwise
+    # group by Asset (then category), with an "Unassigned" bucket for null.
     grouped = defaultdict(lambda: defaultdict(list))
     for tc in qs:
-        grouped[tc.get_domain_key_display()][tc.category].append(tc)
-    # Plain nested dict for the template.
-    grouped = {d: dict(cats) for d, cats in grouped.items()}
+        if active_asset:
+            outer = tc.function.name if tc.function else "General"
+        else:
+            outer = tc.asset.name if tc.asset else "General (no asset)"
+        grouped[outer][tc.category].append(tc)
+    grouped = {k: dict(v) for k, v in grouped.items()}
 
     return render(request, "testcases/board.html", {
         "eng": eng,
         "grouped": grouped,
         "statuses": TestCase.Status.choices,
-        "domain_keys": eng.domain_keys,
-        "active_domain": domain,
+        "assets": eng.assets.all(),
+        "active_asset": active_asset,
+        "functions": active_asset.functions.all() if active_asset else [],
         "active_status": status,
         "can_edit": can_edit_engagement_content(request.user, eng),
     })
@@ -99,18 +108,37 @@ def add_custom(request, code):
     if not can_edit_engagement_content(request.user, eng):
         raise PermissionDenied("Your role cannot edit test cases on this engagement.")
     title = request.POST.get("title", "").strip()
-    domain_key = request.POST.get("domain_key", "").strip()
     category = request.POST.get("category", "").strip() or "Custom"
-    if not title or domain_key not in eng.domain_keys:
-        return HttpResponseBadRequest("title and a valid in-scope domain are required")
+    asset_slug = request.POST.get("asset", "").strip()
+    function_id = request.POST.get("function", "").strip()
+
+    asset = eng.assets.filter(slug=asset_slug).first() if asset_slug else None
+    function = None
+    if asset and function_id.isdigit():
+        function = asset.functions.filter(pk=int(function_id)).first()
+
+    # Domain comes from the chosen asset; otherwise require an in-scope domain.
+    if asset:
+        domain_key = asset.asset_type
+    else:
+        domain_key = request.POST.get("domain_key", "").strip()
+        if domain_key not in eng.domain_keys:
+            return HttpResponseBadRequest("title and a valid in-scope domain are required")
+    if not title:
+        return HttpResponseBadRequest("title is required")
+
     tc = TestCase.objects.create(
         engagement=eng, domain_key=domain_key, category=category,
-        title=title, is_custom=True, updated_by=request.user,
+        title=title, is_custom=True, asset=asset, function=function,
+        updated_by=request.user,
     )
     record(request.user, AuditLog.Action.CREATE,
            f"{eng.code} custom testcase '{title}'", target=tc, request=request)
     messages.success(request, "Custom test case added.")
-    return redirect("testcases:board", code=eng.code)
+    target = redirect("testcases:board", code=eng.code)
+    if asset:
+        target["Location"] += f"?asset={asset.slug}"
+    return target
 
 
 @login_required

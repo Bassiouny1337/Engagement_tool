@@ -23,12 +23,12 @@ ROLE_CAPABILITIES = {
         "manage_users", "manage_roles", "view_all_engagements",
         "manage_engagements", "edit_testcases", "manage_findings",
         "review", "sign_off", "import_scans", "export_reports",
-        "view_audit_log", "manage_catalog",
+        "view_audit_log", "manage_catalog", "review_contributions",
     },
     Role.MANAGER: {
         "view_all_engagements", "manage_engagements", "edit_testcases",
         "manage_findings", "sign_off", "import_scans", "export_reports",
-        "view_audit_log",
+        "view_audit_log", "review_contributions",
     },
     Role.PENTESTER: {
         "edit_testcases", "manage_findings", "import_scans", "export_reports",

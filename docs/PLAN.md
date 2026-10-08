@@ -40,6 +40,7 @@ apps/engagements   engagement + lifecycle, scope, team assignment
 apps/domains       9 domain keys + bundled bootstrap checklists (constants.py)
 apps/catalog       DB-backed checklist templates + scenario library (super admin)
 apps/notebook      per-engagement Markdown wiki (nested pages, Notion-like)
+apps/assets        per-engagement typed assets (creds/services/files/functions)
 apps/testcases     test cases, status, categories, evidence, comments
 apps/findings      vulnerabilities, CVSS, remediation, report-ready
 apps/scans         Nmap XML import, parsed hosts/ports/services
@@ -82,6 +83,17 @@ apps/dashboard     cross-engagement metrics & charts
   (ammonia) against an explicit allowlist — scripts, event handlers and
   javascript: URLs stripped — to prevent stored XSS. Same role+membership access
   as the rest of the engagement.
+- **Assets & per-asset workspace** ✅ — an engagement holds many typed Assets
+  (web/network/wifi/ad/desktop/atm/api/ai/ics-ot), each with type-specific
+  fields, encrypted Credentials (masked + audit-logged reveal), Services,
+  Files/binaries, Functions (components), and a Markdown walkthrough. The test
+  board is per-asset (Asset → Function) with an "All" rollup; Nmap hosts import
+  as network assets.
+- **Personal checklists + promotion** ✅ — each pentester owns personal
+  checklist items and scenarios ("My checklist"), can request promotion to the
+  shared catalog; Admin/Manager approve in a review queue → a global copy is
+  created (personal copy kept) and seeds all future engagements. Seeding uses
+  global items only.
 - **M6 Polish** — dashboard charts, hardening, full test suite, Docker, docs.
 
 ## Core data model (target)

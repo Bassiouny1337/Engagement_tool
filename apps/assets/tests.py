@@ -106,3 +106,33 @@ class AssetViewTests(AssetFlowFixture, TestCase):
             "asset_type": "web", "name": "X", "primary_target": "", "description": "",
         })
         self.assertEqual(resp.status_code, 403)
+
+
+class PerAssetBoardTests(AssetFlowFixture, TestCase):
+    def test_add_custom_testcase_under_asset_function(self):
+        a = Asset.objects.create(engagement=self.eng, asset_type="web", name="App")
+        fn = Function.objects.create(asset=a, name="Login")
+        self.client.login(username="pt", password="pw-123456789")
+        resp = self.client.post(reverse("testcases:add_custom", args=[self.eng.code]), {
+            "asset": a.slug, "function": str(fn.pk),
+            "title": "Test MFA bypass", "category": "Auth",
+        })
+        self.assertEqual(resp.status_code, 302)
+        from apps.testcases.models import TestCase as TC
+        tc = TC.objects.get(title="Test MFA bypass")
+        self.assertEqual(tc.asset, a)
+        self.assertEqual(tc.function, fn)
+        self.assertEqual(tc.domain_key, "web")  # inherited from asset type
+
+    def test_board_filters_by_asset(self):
+        from apps.testcases.models import TestCase as TC
+        a1 = Asset.objects.create(engagement=self.eng, asset_type="web", name="App1")
+        a2 = Asset.objects.create(engagement=self.eng, asset_type="web", name="App2")
+        TC.objects.create(engagement=self.eng, domain_key="web", category="c",
+                          title="only-on-app1", asset=a1)
+        TC.objects.create(engagement=self.eng, domain_key="web", category="c",
+                          title="only-on-app2", asset=a2)
+        self.client.login(username="pt", password="pw-123456789")
+        resp = self.client.get(reverse("testcases:board", args=[self.eng.code]) + f"?asset={a1.slug}")
+        self.assertContains(resp, "only-on-app1")
+        self.assertNotContains(resp, "only-on-app2")
