@@ -56,6 +56,15 @@
                     <input type="hidden" name="port" value="{{ p.port }}">
                     <input type="hidden" name="service" value="{{ p.service.name }}">
                     <button class="link" title="Create a network test case">+test</button></form>
+                  <form method="post" action="{% url 'scans:add_asset' code=eng.code pk=scan.pk %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="ip" value="{{ host.ip }}">
+                    <input type="hidden" name="port" value="{{ p.port }}">
+                    <input type="hidden" name="protocol" value="{{ p.protocol }}">
+                    <input type="hidden" name="service" value="{{ p.service.name }}">
+                    <input type="hidden" name="product" value="{{ p.service.product }}">
+                    <input type="hidden" name="version" value="{{ p.service.version }}">
+                    <button class="link" title="Create/update a network asset">+asset</button></form>
                 {% endif %}
               </td>
             {% endif %}

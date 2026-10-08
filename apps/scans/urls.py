@@ -10,4 +10,5 @@ urlpatterns = [
     path("<slug:code>/<int:pk>/", views.scan_detail, name="detail"),
     path("<slug:code>/<int:pk>/scope/", views.add_scope_from_host, name="add_scope"),
     path("<slug:code>/<int:pk>/testcase/", views.add_testcase_from_service, name="add_testcase"),
+    path("<slug:code>/<int:pk>/asset/", views.add_asset_from_host, name="add_asset"),
 ]

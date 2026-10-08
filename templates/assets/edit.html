@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ asset.name }}{% endblock %}
+{% block content %}
+<h1>Edit asset · {{ asset.name }}</h1>
+<form method="post" class="stack card">{% csrf_token %}
+  {{ form.as_p }}
+  <h3 class="cat">{{ asset.get_asset_type_display }} details</h3>
+  {{ attrs.as_p }}
+  <div class="row-gap"><button class="primary">Save</button>
+    <a href="{% url 'assets:detail' code=eng.code slug=asset.slug %}" class="btn-sm">Cancel</a></div>
+</form>
+{% endblock %}

@@ -4,3 +4,4 @@ django-guardian>=2.4
 defusedxml>=0.7
 Markdown>=3.5
 nh3>=0.2
+cryptography>=42

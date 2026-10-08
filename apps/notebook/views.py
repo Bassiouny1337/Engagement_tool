@@ -120,5 +120,6 @@ def page_delete(request, code, slug):
 def preview(request, code):
     """Live Markdown preview (HTMX). Renders sanitized HTML from posted text."""
     eng = _engagement_or_403(request, code)
-    html = render_markdown(request.POST.get("content", ""))
+    text = request.POST.get("content") or request.POST.get("walkthrough") or ""
+    html = render_markdown(text)
     return HttpResponse(html or '<p class="muted">Nothing to preview.</p>')

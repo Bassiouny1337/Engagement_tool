@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ asset.name }} · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <h1>{{ asset.name }} <span class="chip">{{ asset.get_asset_type_display }}</span></h1>
+    {% if asset.primary_target %}<p class="mono muted">{{ asset.primary_target }}</p>{% endif %}
+  </div>
+  <div class="row-gap">
+    <a href="{% url 'testcases:board' code=eng.code %}?asset={{ asset.slug }}" class="btn-sm">Test board ({{ tc_done }}/{{ tc_total }})</a>
+    {% if can_edit %}
+      <a href="{% url 'assets:edit' code=eng.code slug=asset.slug %}" class="btn-sm">Edit</a>
+      <form method="post" action="{% url 'assets:delete' code=eng.code slug=asset.slug %}" class="inline"
+            onsubmit="return confirm('Delete this asset and its data?')">{% csrf_token %}<button class="link danger">Delete</button></form>
+    {% endif %}
+    <a href="{% url 'assets:list' code=eng.code %}" class="btn-sm">← Assets</a>
+  </div>
+</div>
+{% if asset.description %}<p>{{ asset.description }}</p>{% endif %}
+
+{% if attr_rows %}
+<section class="card">
+  <h2>Details</h2>
+  <table class="data compact"><tbody>
+    {% for label, value in attr_rows %}<tr><th>{{ label }}</th><td class="mono">{{ value|default:"—" }}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endif %}
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Functions / components</h2>
+    <ul class="tags">
+      {% for f in functions %}
+        <li>{{ f.name }}{% if can_edit %}
+          <form method="post" action="{% url 'assets:delete_child' code=eng.code slug=asset.slug model='function' pk=f.pk %}" class="inline">{% csrf_token %}<button class="link danger">✕</button></form>{% endif %}</li>
+      {% empty %}<li class="muted">None yet</li>{% endfor %}
+    </ul>
+    {% if can_edit %}
+      <form method="post" action="{% url 'assets:add_function' code=eng.code slug=asset.slug %}" class="row-gap wrap">
+        {% csrf_token %}{{ forms.func.name }}<button class="btn-sm">Add function</button></form>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Credentials</h2>
+    <table class="data compact"><tbody>
+      {% for c in credentials %}
+        <tr>
+          <td>{{ c.label }}<br><span class="muted">{{ c.username }} · {{ c.get_kind_display }}</span></td>
+          <td>
+            <span id="cred-{{ c.pk }}" class="muted">••••••••</span>
+            <button class="link" hx-post="{% url 'assets:reveal_credential' code=eng.code slug=asset.slug pk=c.pk %}"
+                    hx-target="#cred-{{ c.pk }}" hx-swap="innerHTML"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>reveal</button>
+          </td>
+          {% if can_edit %}<td><form method="post" action="{% url 'assets:delete_child' code=eng.code slug=asset.slug model='credential' pk=c.pk %}" class="inline">{% csrf_token %}<button class="link danger">✕</button></form></td>{% endif %}
+        </tr>
+      {% empty %}<tr><td colspan="3" class="muted">None</td></tr>{% endfor %}
+    </tbody></table>
+    {% if can_edit %}
+      <form method="post" action="{% url 'assets:add_credential' code=eng.code slug=asset.slug %}" class="stack" style="margin-top:10px">
+        {% csrf_token %}
+        <div class="row-gap wrap">{{ forms.cred.label }}{{ forms.cred.username }}{{ forms.cred.kind }}</div>
+        <div class="row-gap wrap">{{ forms.cred.secret }}{{ forms.cred.notes }}<button class="btn-sm">Add credential</button></div>
+      </form>
+      <p class="muted" style="font-size:.78rem">Secrets are encrypted at rest; reveals are audit-logged.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% if asset.asset_type == 'network' or services %}
+<section class="card">
+  <h2>Services</h2>
+  <table class="data compact">
+    <thead><tr><th>Port</th><th>Proto</th><th>Name</th><th>Product</th><th>Version</th><th>Notes</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+      {% for s in services %}
+        <tr><td class="mono">{{ s.port }}</td><td>{{ s.protocol }}</td><td>{{ s.name }}</td>
+          <td class="muted">{{ s.product }}</td><td class="muted">{{ s.version }}</td><td class="muted">{{ s.notes }}</td>
+          {% if can_edit %}<td><form method="post" action="{% url 'assets:delete_child' code=eng.code slug=asset.slug model='service' pk=s.pk %}" class="inline">{% csrf_token %}<button class="link danger">✕</button></form></td>{% endif %}</tr>
+      {% empty %}<tr><td colspan="7" class="muted">None</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% if can_edit %}
+    <form method="post" action="{% url 'assets:add_service' code=eng.code slug=asset.slug %}" class="row-gap wrap">
+      {% csrf_token %}{{ forms.svc.port }}{{ forms.svc.protocol }}{{ forms.svc.name }}{{ forms.svc.product }}{{ forms.svc.version }}<button class="btn-sm">Add service</button></form>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if asset.asset_type == 'desktop' or files %}
+<section class="card">
+  <h2>Files / binaries</h2>
+  <table class="data compact">
+    <thead><tr><th>Name</th><th>Kind</th><th>Path</th><th>SHA-256</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+      {% for f in files %}
+        <tr><td>{{ f.name }}</td><td>{{ f.get_kind_display }}</td><td class="mono">{{ f.path }}</td>
+          <td class="mono muted">{{ f.sha256|truncatechars:16 }}</td>
+          {% if can_edit %}<td><form method="post" action="{% url 'assets:delete_child' code=eng.code slug=asset.slug model='file' pk=f.pk %}" class="inline">{% csrf_token %}<button class="link danger">✕</button></form></td>{% endif %}</tr>
+      {% empty %}<tr><td colspan="5" class="muted">None</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% if can_edit %}
+    <form method="post" action="{% url 'assets:add_file' code=eng.code slug=asset.slug %}" class="row-gap wrap">
+      {% csrf_token %}{{ forms.file.name }}{{ forms.file.kind }}{{ forms.file.path }}{{ forms.file.sha256 }}<button class="btn-sm">Add file</button></form>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <div class="row-between">
+    <h2>Walkthrough</h2>
+    {% if can_edit %}<a href="{% url 'assets:walkthrough' code=eng.code slug=asset.slug %}" class="btn-sm">Edit</a>{% endif %}
+  </div>
+  {% if walkthrough_html %}<article class="md-body">{{ walkthrough_html|safe }}</article>
+  {% else %}<p class="muted">No walkthrough yet.</p>{% endif %}
+</section>
+{% endblock %}

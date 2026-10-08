@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Assets · {{ eng.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Assets · {{ eng.code }}</h1>
+  <div class="row-gap">
+    {% if can_edit %}<a href="{% url 'assets:create' code=eng.code %}" class="primary btn-sm">+ New asset</a>{% endif %}
+    <a href="{% url 'engagements:detail' code=eng.code %}" class="btn-sm">← Engagement</a>
+  </div>
+</div>
+<table class="data">
+  <thead><tr><th>Name</th><th>Type</th><th>Target</th><th>Functions</th><th>Creds</th></tr></thead>
+  <tbody>
+    {% for a in assets %}
+      <tr>
+        <td><a href="{% url 'assets:detail' code=eng.code slug=a.slug %}">{{ a.name }}</a></td>
+        <td><span class="chip">{{ a.get_asset_type_display }}</span></td>
+        <td class="mono">{{ a.primary_target|default:"—" }}</td>
+        <td>{{ a.functions.count }}</td>
+        <td>{{ a.credentials.count }}</td>
+      </tr>
+    {% empty %}<tr><td colspan="5" class="muted">No assets yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

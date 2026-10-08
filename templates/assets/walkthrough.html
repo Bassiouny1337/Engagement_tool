@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Walkthrough · {{ asset.name }}{% endblock %}
+{% block content %}
+<div class="row-between"><h1>Walkthrough · {{ asset.name }}</h1>
+  <a href="{% url 'assets:detail' code=eng.code slug=asset.slug %}" class="btn-sm">Cancel</a></div>
+<form method="post" class="stack">{% csrf_token %}
+  <div class="nb-editor">
+    <div class="nb-pane"><h3 class="cat">Markdown</h3>{{ form.walkthrough }}</div>
+    <div class="nb-pane"><h3 class="cat">Preview</h3>
+      <article id="md-preview" class="md-body notes-ro"
+               hx-post="{% url 'notebook:preview' code=eng.code %}"
+               hx-trigger="load, keyup changed delay:400ms from:#md-input"
+               hx-include="#md-input" hx-swap="innerHTML"
+               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <span class="muted">Start typing…</span></article>
+    </div>
+  </div>
+  <div class="row-gap"><button class="primary">Save walkthrough</button></div>
+</form>
+{% endblock %}

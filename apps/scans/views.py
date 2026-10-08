@@ -134,3 +134,35 @@ def add_testcase_from_service(request, code, pk):
            f"{eng.code} scan-derived testcase {ip}:{port}", target=tc, request=request)
     messages.success(request, f"Added test case for {ip}:{port}.")
     return redirect("scans:detail", code=eng.code, pk=scan.pk)
+
+
+@login_required
+@require_POST
+def add_asset_from_host(request, code, pk):
+    """Create (or reuse) a network Asset for a host and attach the service."""
+    from apps.assets.models import Asset, Service
+
+    eng = _engagement_or_403(request, code)
+    if not can_edit_engagement_content(request.user, eng):
+        raise PermissionDenied("Your role cannot add assets.")
+    scan = get_object_or_404(Scan, pk=pk, engagement=eng)
+    ip = request.POST.get("ip", "").strip()
+    if not ip:
+        messages.error(request, "No host specified.")
+        return redirect("scans:detail", code=eng.code, pk=scan.pk)
+    asset, created = Asset.objects.get_or_create(
+        engagement=eng, asset_type="network", primary_target=ip,
+        defaults={"name": ip, "created_by": request.user},
+    )
+    port = request.POST.get("port", "").strip()
+    if port.isdigit():
+        Service.objects.get_or_create(
+            asset=asset, port=int(port), protocol=request.POST.get("protocol", ""),
+            defaults={"name": request.POST.get("service", ""),
+                      "product": request.POST.get("product", ""),
+                      "version": request.POST.get("version", "")},
+        )
+    record(request.user, AuditLog.Action.CREATE if created else AuditLog.Action.UPDATE,
+           f"{eng.code} asset from scan host {ip}", target=asset, request=request)
+    messages.success(request, f"{'Created' if created else 'Updated'} asset {ip}.")
+    return redirect("assets:detail", code=eng.code, slug=asset.slug)
